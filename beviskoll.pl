@@ -11,13 +11,12 @@ verify(InputFileName) :-
 valid_proof(Premises, Goal, Proof) :-
 	valid_proof(Premises, Goal, Proof, []).
 
+% Vi har kommit till slutet av beviset, basfall, listan med icke-validerade rader är tom och sista raden som lagts till i Verified är Goal
+valid_proof(_Premises, Goal, [], [[_Row, Goal, _Rule]|_Validate]).
 
 valid_proof(Premises, Goal, [CurrRow|RestOfProof], Verified) :-
 	valid_rule(Premises, CurrRow, Verified),   % Verifiera regeln
 	valid_proof(Premises, Goal, RestOfProof, [CurrRow|Verified]). % Lägg till i lista och gå till nästa rad
-
-% Vi har kommit till slutet av beviset, basfall, listan med icke-validerade rader är tom och sista raden som lagts till i Verified är Goal
-valid_proof(_Premises, Goal, [], [[_Row, Goal, _Rule]|_Validate]).
 
 % Verifiera en box
 valid_proof(Premises, Goal, [[[Row, Result, assumption]|Boxtail]|Prooftail], Verified) :-
