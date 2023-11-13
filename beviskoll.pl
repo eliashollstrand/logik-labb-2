@@ -127,13 +127,15 @@ valid_rule(_Premises, [_Row, E, pbc(Row1,Row2)], Verified) :-
 
 % ---- valid_box ----
 
-% Slutet på en box, basfall
+% Case 1 - Slutet på en box, basfall
 valid_box(_Premises, _Goal, [], _Verified).
 
+% Case 2
 valid_box(Premises, Goal, [[[Row, Result, assumption]|Boxtail]|Prooftail], Verified) :-
 	valid_box(Premises, Goal, Boxtail, [[Row, Result, assumption]|Verified]),
 	valid_box(Premises, Goal, Prooftail, [[[Row, Result, assumption]|Boxtail]|Verified]).
 
+% Case 3
 valid_box(Premises, Goal, [Proofhead|Prooftail], Verified) :-
 	valid_rule(Premises, Proofhead, Verified),
 	valid_box(Premises, Goal, Prooftail, [Proofhead|Verified]).
