@@ -37,29 +37,29 @@ verify_rule(_Premises, [_Row, and(E1, E2), andint(Row1,Row2)], Verified) :-
 
 % And elimination 1 - andel1
 verify_rule(_Premises, [_Row, E, andel1(Row)], Verified) :-
-	member([Row, and(E, _), _Rule], Verified).
+	member([Row, and(E, _E), _Rule], Verified).
 
 % And elimination 2 - andel2
 verify_rule(_Premises, [_Row, E, andel2(Row)], Verified) :-
-	member([Row, and(_, E), _Rule], Verified).
+	member([Row, and(_E, E), _Rule], Verified).
 	
 % Or introduction 1 - orint1
-verify_rule(_Premises, [_Row, or(E, _), orint1(Row)], Verified) :-
+verify_rule(_Premises, [_Row, or(E, _E), orint1(Row)], Verified) :-
 	member([Row, E, _Rule], Verified).
 
 % Or introduction 2 - orint2
-verify_rule(_Premises, [_Row, or(_, E), orint2(Row)], Verified) :-
+verify_rule(_Premises, [_Row, or(_E, E), orint2(Row)], Verified) :-
 	member([Row, E, _Rule], Verified).
 
 % Or elimination - orel
 verify_rule(_Premises, [_Row, Result, orel(A,B,C,D,E)], Verified) :-
 	search_for_box(B, Verified, Box1),
 	search_for_box(D, Verified, Box2),
-	member([A, or(E1, E2), _], Verified),
-	member([B, E1, _], Box1),
-	member([D, E2, _], Box2),
-	member([C, Result, _], Box1),
-	member([E, Result, _], Box2),
+	member([A, or(E1, E2), _RuleA], Verified),
+	member([B, E1, _RuleB], Box1),
+	member([D, E2, _RuleC], Box2),
+	member([C, Result, _RuleD], Box1),
+	member([E, Result, _RuleE], Box2),
 	find_last_in_box(Box1, LastElement1),
 	find_last_in_box(Box2, LastElement2),
 	member(C, LastElement1),
@@ -69,27 +69,27 @@ verify_rule(_Premises, [_Row, Result, orel(A,B,C,D,E)], Verified) :-
 verify_rule(_Premises, [_Row, imp(E1, E2), impint(Row1, Row2)], Verified) :-
 	search_for_box(Row1, Verified, Box),
 	member([Row1, E1, assumption], Box),
-	member([Row2, E2, _], Box), 
+	member([Row2, E2, _Rule], Box), 
 	find_last_in_box(Box, LastElement),
 	member(Row2, LastElement).
 
 % Implication elimination - impel
 verify_rule(_Premises, [_Row, Result, impel(Row1,Row2)], Verified) :-
-	member([Row1, Imppremise, _], Verified),
-	member([Row2, imp(Imppremise, Result),_Rule], Verified).
+	member([Row1, Imppremise, _Rule1], Verified),
+	member([Row2, imp(Imppremise, Result), _Rule2], Verified).
 
 % Negation Introduction - negint
 verify_rule(_Premises, [_Row, neg(E), negint(Row1,Row2)], Verified) :-
 	search_for_box(Row1, Verified, Box),
 	member([Row1, E, assumption], Box),
-	member([Row2, cont, _], Box),
+	member([Row2, cont, _Rule], Box),
 	find_last_in_box(Box, LastElement),
 	member(Row2, LastElement).
 
 % Negation elimination - negel
 verify_rule(_Premises, [_Row, cont, negel(Row1,Row2)], Verified) :-
-	member([Row1, E, _], Verified),
-	member([Row2, neg(E), _], Verified).
+	member([Row1, E, _Rule1], Verified),
+	member([Row2, neg(E), _Rule2], Verified).
 
 % Double negation introduction - negnegint
 verify_rule(_Premises, [_Row, neg(neg(E)), negnegint(Row)], Verified) :-
@@ -108,18 +108,18 @@ verify_rule(_Premises, [_Row, or(E, neg(E)), lem], _Verified).
 
 % MT - mt
 verify_rule(_Premises, [_Row, neg(E1), mt(Row1,Row2)], Verified) :-
-	member([Row1, imp(E1, E2), _], Verified),
-	member([Row2, neg(E2), _], Verified).
+	member([Row1, imp(E1, E2), _Rule1], Verified),
+	member([Row2, neg(E2), _Rule2], Verified).
 
 % Contradiction elimination - contel
 verify_rule(_Premises, [_Row, _Result, contel(Row)], Verified) :-
-	member([Row, cont, _], Verified).
+	member([Row, cont, _Rule], Verified).
 
 % PBC (Proof by contradiction) - pbc
 verify_rule(_Premises, [_Row, E, pbc(Row1,Row2)], Verified) :-
 	search_for_box(Row1, Verified, Box),
 	member([Row1, neg(E), assumption], Box),
-	member([Row2, cont, _], Box),
+	member([Row2, cont, _Rule], Box),
 	find_last_in_box(Box, LastElement),
 	member(Row2, LastElement).
 	
@@ -143,14 +143,14 @@ verify_box(Premises, Conclusion, [ProofHead|ProofTail], Verified) :-
 
 % Search for a box that begins at row RowNr at head of Verified
 search_for_box(RowNr, [FirstElem|_Verified], FirstElem) :-
-	member([RowNr, _, _], FirstElem).
+	member([RowNr, _Result, _Rule], FirstElem).
 
 % Search for box that begins at row RowNr in the tail of Verified
-search_for_box(RowNr, [_|Verified], _Box) :-
+search_for_box(RowNr, [_FirstElem|Verified], _Box) :-
 	search_for_box(RowNr, Verified, _Box).
 
 % Find the last element in a box
 find_last_in_box([LastElement], LastElement). % Base case: Last element is found
 
-find_last_in_box([_|Rest], LastElement) :-
+find_last_in_box([_FirstElem|Rest], LastElement) :-
     find_last_in_box(Rest, LastElement). % Recursively traverse the box
