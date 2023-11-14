@@ -141,9 +141,11 @@ verify_box(Premises, Conclusion, [ProofHead|ProofTail], Verified) :-
 
 % ---- search_for_box ----
 
+% Search for a box that begins at row RowNr at head of Verified
 search_for_box(RowNr, [FirstElem|_Verified], FirstElem) :-
 	member([RowNr, _, _], FirstElem).
 
+% Search for box that begins at row RowNr in the tail of Verified
 search_for_box(RowNr, [_|Verified], _Box) :-
 	search_for_box(RowNr, Verified, _Box).
 
