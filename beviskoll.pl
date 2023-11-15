@@ -8,11 +8,11 @@ verify(InputFileName) :-
 
 % ---- verify_proof ----
 
-% Börja verifiering mha hjälppredikatet verify_proof/4, som har en tom lista som sedan ska fyllas med verifyerade rader.
+% Börja verifiering mha hjälppredikatet verify_proof/4, som har en tom lista som sedan ska fyllas med verifierade rader.
 verify_proof(Premises, Conclusion, Proof) :-
 	verify_proof(Premises, Conclusion, Proof, []).
 
-% Case 1 - Vi har kommit till slutet av beviset, basfall, listan med icke-verifyerade rader är tom och sista raden som lagts till i Verified är Conclusion
+% Case 1 - Vi har kommit till slutet av beviset, basfall, listan med icke-verifierade rader är tom och sista raden som lagts till i Verified är Conclusion
 verify_proof(_Premises, Conclusion, [], [[_Row, Conclusion, _Rule]|_Verified]).
 
 % Case 2 - Verifiera en box
