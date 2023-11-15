@@ -5,6 +5,7 @@ verify(InputFileName) :-
 	seen,
 	verify_proof(Premises, Conclusion, Proof).
 
+
 % ---- verify_proof ----
 
 % Börja verifiering mha hjälppredikatet verify_proof/4, som har en tom lista som sedan ska fyllas med verifyerade rader.
@@ -12,17 +13,18 @@ verify_proof(Premises, Conclusion, Proof) :-
 	verify_proof(Premises, Conclusion, Proof, []).
 
 % Case 1 - Vi har kommit till slutet av beviset, basfall, listan med icke-verifyerade rader är tom och sista raden som lagts till i Verified är Conclusion
-verify_proof(_Premises, Conclusion, [], [[_Row, Conclusion, _Rule]|_verifyate]).
+verify_proof(_Premises, Conclusion, [], [[_Row, Conclusion, _Rule]|_Verified]).
 
 % Case 2 - Verifiera en box
-verify_proof(Premises, Conclusion, [[[Row, Result, assumption]|Boxtail]|ProofTail], Verified) :-
-	verify_box(Premises, Conclusion, Boxtail, [[Row, Result, assumption]|Verified]),
-	verify_proof(Premises, Conclusion, ProofTail, [[[Row, Result, assumption]|Boxtail]|Verified]).
+verify_proof(Premises, Conclusion, [[[Row, Result, assumption]|BoxTail]|ProofTail], Verified) :-
+	verify_box(Premises, Conclusion, BoxTail, [[Row, Result, assumption]|Verified]),
+	verify_proof(Premises, Conclusion, ProofTail, [[[Row, Result, assumption]|BoxTail]|Verified]).
 
-% Case 3
+% Case 3 - Verifiera "vanliga" rader
 verify_proof(Premises, Conclusion, [CurrRow|RestOfProof], Verified) :-
 	verify_rule(Premises, CurrRow, Verified),   % Verifiera regeln
 	verify_proof(Premises, Conclusion, RestOfProof, [CurrRow|Verified]). % Lägg till i lista och gå till nästa rad
+
 
 % ---- verify_rule ----
 
@@ -129,12 +131,14 @@ verify_rule(_Premises, [_Row, E, pbc(Row1,Row2)], Verified) :-
 % Case 1 - Slutet på en box, basfall
 verify_box(_Premises, _Conclusion, [], _Verified).
 
-% Case 2
-verify_box(Premises, Conclusion, [[[Row, Result, assumption]|Boxtail]|ProofTail], Verified) :-
-	verify_box(Premises, Conclusion, Boxtail, [[Row, Result, assumption]|Verified]),
-	verify_box(Premises, Conclusion, ProofTail, [[[Row, Result, assumption]|Boxtail]|Verified]).
+% Case 2 - En box med assumption på första raden hittas. Nödvändig för nästlade boxar.
+verify_box(Premises, Conclusion, [[[Row, Result, assumption]|BoxTail]|ProofTail], Verified) :-
+	% Verifiera resten av inre boxen. Lägg till assumptionrad i Verified. 
+	verify_box(Premises, Conclusion, BoxTail, [[Row, Result, assumption]|Verified]),
+	% Verifiera resten av boxen utanför. Lägg till inre box i Verified. 
+	verify_box(Premises, Conclusion, ProofTail, [[[Row, Result, assumption]|BoxTail]|Verified]).
 
-% Case 3
+% Case 3 - Verifiera rader i boxen eller i box utanför om kallad från inre box
 verify_box(Premises, Conclusion, [ProofHead|ProofTail], Verified) :-
 	verify_rule(Premises, ProofHead, Verified),
 	verify_box(Premises, Conclusion, ProofTail, [ProofHead|Verified]).
@@ -150,7 +154,9 @@ search_for_box(RowNr, [_FirstElem|Verified], _Box) :-
 	search_for_box(RowNr, Verified, _Box).
 
 % Find the last element in a box
-find_last_in_box([LastElement], LastElement). % Base case: Last element is found
+% Base case: Last element is found
+find_last_in_box([LastElement], LastElement). 
 
+% Recursively traverse the box
 find_last_in_box([_FirstElem|Rest], LastElement) :-
-    find_last_in_box(Rest, LastElement). % Recursively traverse the box
+    find_last_in_box(Rest, LastElement).
