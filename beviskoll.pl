@@ -3,13 +3,13 @@ verify(InputFileName) :-
 	see(InputFileName),
 	read(Premises), read(Conclusion), read(Proof),
 	seen,
-	verify_proof(Premises, Conclusion, Proof).
+	valid_proof(Premises, Conclusion, Proof).
 
 
 % ---- verify_proof ----
 
 % Börja verifiering mha hjälppredikatet verify_proof/4, som har en tom lista som sedan ska fyllas med verifierade rader.
-verify_proof(Premises, Conclusion, Proof) :-
+valid_proof(Premises, Conclusion, Proof) :-
 	verify_proof(Premises, Conclusion, Proof, []).
 
 % Case 1 - Vi har kommit till slutet av beviset, basfall, listan med icke-verifierade rader är tom och sista raden som lagts till i Verified är Conclusion
